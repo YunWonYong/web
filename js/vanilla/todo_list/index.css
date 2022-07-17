@@ -1,0 +1,108 @@
+.title {
+  font-style: italic;
+  font-size: 2em;
+  position: relative;
+  letter-spacing: 2px;
+}
+
+.title:after {
+  content: " ";
+  height: 3px;
+  background-color: black;
+  border-radius: 20%;
+  position: absolute;
+  width: 100%;
+  bottom: 0px;
+  left: 0;
+  margin-right: -5px;
+}
+
+.date_navigator {
+  display: block;
+  padding-bottom: 5px;
+}
+
+.date_navigator_list {
+  position: relative;
+}
+
+.date_navigator_lt,
+.date_navigator_gt {
+  position: absolute;
+  font-size: 1.5em;
+  font-weight: 900;
+  cursor: pointer;
+  color: gray;
+}
+
+.date_navigator_lt {
+  left: -30px;
+}
+
+.date_navigator_gt {
+  right: -30px;
+}
+
+.date_navigator_lt:hover,
+.date_navigator_gt:hover {
+  color: black;
+}
+.date_navigator_lt::before {
+  content: "<";
+  height: 1px;
+}
+
+.date_navigator_gt::before {
+  content: ">";
+  height: 1px;
+}
+
+.hide {
+  visibility: hidden;
+}
+
+.todo_container {
+  width: 100%;
+  border: 3px solid black;
+  display: block;
+  height: 550px;
+}
+
+.todo_box {
+  display: block;
+  padding: 10px 25px;
+}
+
+.todo_input_box {
+  display: block;
+}
+
+.todo_input {
+  width: 75%;
+}
+
+.todo_register {
+  font-weight: 600;
+}
+
+.todo_list_box {
+  display: block;
+  padding-top: 5px;
+  margin-top: 5px;
+}
+
+.todo_list_item {
+  display: block;
+  border: 1px solid black;
+  margin: 5px 0;
+}
+
+.todo_list_item::after {
+  clear: both;
+}
+
+.todo_list_cbx {
+  float: left;
+  width: 15px;
+  height: 15px;
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, user-scalable=no"
+    />
+    <link href="./initialize.css" rel="stylesheet" />
+    <link href="./index.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+
+    <title>vanilla todo</title>
+    <script type="text/javascript">
+      const Todo = {
+        todoList: null,
+        register: null,
+        list: null,
+        dateList: [],
+        dateNavigator: {
+          selectedDate: null,
+          ltElement: null,
+          gtElement: null,
+          currentTime: 0,
+          currentDate: "1992-11-07",
+          moveTime: 0,
+          moveDate: "",
+        },
+      };
+
+      const pageLoad = () => {
+        dateNavigatorInit();
+        todoListInit().then(console.log).catch(console.log);
+      };
+
+      const todoListInit = async () => {
+        Todo.todoList = document.getElementById("todoList");
+        Todo.register = document.getElementById("register");
+        const response = await axios.get("./todoList.json");
+        const { data } = response;
+        Todo.list = data;
+        listUp();
+        Todo.dateList = Object.keys(Todo.todoList);
+      };
+
+      const listUp = () => {
+        const {
+          dateNavigator: { moveDate },
+          todoList,
+          list,
+        } = Todo;
+
+        todoListReset();
+
+        const dateTodoList = list[moveDate];
+
+        if (!dateTodoList || !dateTodoList.length) {
+          return;
+        }
+        const printList = [];
+        let li = null;
+        let checkBox = null;
+        let content = null;
+        dateTodoList.forEach(({ checked, title, id }) => {
+          li = document.createElement("LI");
+          li.id = id;
+          li.classList.add("todo_list_item");
+          checkBox = document.createElement("INPUT");
+          checkBox.type = "checkbox";
+          checkBox.checked = checked;
+          checkBox.classList.add("input_checkbox", "todo_list_cbx", "checked");
+          checkBox.value = checked;
+          content = document.createElement("P");
+          content.innerText = title;
+          li.appendChild(checkBox);
+          li.appendChild(content);
+          printList.push(li);
+        });
+        todoList.append(...printList);
+      };
+
+      const todoListReset = () => {
+        const { todoList } = Todo;
+
+        while (todoList.hasChildNodes()) {
+          todoList.removeChild(todoList.firstChild);
+        }
+      };
+
+      const dateNavigatorInit = () => {
+        dateInit();
+        const { dateNavigator } = Todo;
+        const printElement = document.getElementById("currentDate");
+        dateNavigator.selectedDate = printElement;
+
+        dateSetup();
+        const ltMoveElement = document.getElementById("dateLt");
+        const gtMoveElement = document.getElementById("dateGt");
+        ltMoveElement.addEventListener("click", () => dateMove("left"));
+        gtMoveElement.addEventListener("click", () => dateMove("right"));
+        dateNavigator.ltElement = ltMoveElement;
+        dateNavigator.gtElement = gtMoveElement;
+      };
+
+      const dateInit = () => {
+        const currentDate = new Date();
+        const { dateNavigator } = Todo;
+        dateNavigator.currentTime = dateNavigator.moveTime =
+          currentDate.getTime();
+
+        dateNavigator.currentDate = dateFormat([
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          currentDate.getUTCDate(),
+        ]);
+      };
+
+      const dateSetup = () => {
+        const date = new Date();
+        const { dateNavigator } = Todo;
+        date.setTime(dateNavigator.moveTime);
+        const ymd = dateFormat([
+          date.getUTCFullYear(),
+          date.getUTCMonth() + 1,
+          date.getUTCDate(),
+        ]);
+        dateNavigator.moveDate = ymd;
+        dateNavigator.selectedDate.innerText = dateNavigator.moveDate;
+      };
+
+      const dateFormat = (array) => {
+        const temp = [];
+        array.forEach((element) => {
+          temp.push(element < 10 ? "0" + element : element);
+        });
+        return temp.join("-");
+      };
+
+      const dateMove = (direction) => {
+        const { dateNavigator } = Todo;
+        const gtClassList = dateNavigator.gtElement.classList;
+        if (gtClassList.contains("hide") && direction === "right") {
+          return;
+        }
+        dateNavigator.moveTime += direction === "left" ? -86400000 : 86400000;
+        dateSetup();
+        gtElementCheck();
+        listUp();
+      };
+
+      const gtElementCheck = () => {
+        const { dateNavigator } = Todo;
+        const gtClassList = dateNavigator.gtElement.classList;
+
+        if (dateNavigator.moveTime >= dateNavigator.currentTime) {
+          gtClassList.add("hide");
+          return;
+        }
+        gtClassList.remove("hide");
+      };
+    </script>
+  </head>
+  <body onload="pageLoad()">
+    <main>
+      <section>
+        <header>
+          <h1 class="title">TO DO LIST</h1>
+        </header>
+        <article>
+          <nav class="date_navigator">
+            <ul class="date_navigator_list">
+              <li class="date_navigator_lt" id="dateLt">
+                <span></span>
+              </li>
+              <li>
+                <h3 id="currentDate">2022-07-08</h3>
+              </li>
+              <li class="date_navigator_gt hide" id="dateGt">
+                <span></span>
+              </li>
+            </ul>
+          </nav>
+          <div class="todo_container">
+            <div class="todo_box">
+              <div class="todo_input_box">
+                <input class="input_text todo_input" type="text" name="todo" />
+                <div class="todo_register btn" id="register">REGISTER</div>
+              </div>
+              <div class="todo_list_box">
+                <ul class="todo_list" id="todoList"></ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
