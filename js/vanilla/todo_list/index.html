@@ -9,11 +9,13 @@
     <link href="./initialize.css" rel="stylesheet" />
     <link href="./index.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
 
     <title>vanilla todo</title>
     <script type="text/javascript">
       const Todo = {
         todoList: null,
+        todoInput: null,
         register: null,
         list: null,
         dateList: [],
@@ -30,12 +32,37 @@
 
       const pageLoad = () => {
         dateNavigatorInit();
-        todoListInit().then(console.log).catch(console.log);
+        todoListInit().then(() => {
+          registerInit();
+        }).catch(console.log);
+      };
+
+      const registerInit = () => {
+        const input = document.getElementById("todoInput");
+        const btn = document.getElementById("register");
+        Todo.todoInput = input;
+        
+        btn.addEventListener("click", () => {
+          const todoText = Todo.todoInput.value;
+          const { dateNavigator: { moveDate } } = Todo;
+          if (!Todo.list[moveDate]) {
+            Todo.list[moveDate] = [];
+          } 
+          const item = {};
+          item.id = uuid.v4();
+          item.checked = false;
+          item.title = todoText
+          Todo.list[moveDate].unshift(item);
+          listUp();
+          Todo.todoInput.value = "";
+        });
+
+        Todo.register = btn; 
+
       };
 
       const todoListInit = async () => {
         Todo.todoList = document.getElementById("todoList");
-        Todo.register = document.getElementById("register");
         const response = await axios.get("./todoList.json");
         const { data } = response;
         Todo.list = data;
@@ -52,29 +79,16 @@
 
         todoListReset();
 
-        const dateTodoList = list[moveDate];
-
-        if (!dateTodoList || !dateTodoList.length) {
+        const dateTodoListInfo = list[moveDate];
+        if (!dateTodoListInfo || dateTodoListInfo.length === 0) {
           return;
         }
         const printList = [];
         let li = null;
         let checkBox = null;
         let content = null;
-        dateTodoList.forEach(({ checked, title, id }) => {
-          li = document.createElement("LI");
-          li.id = id;
-          li.classList.add("todo_list_item");
-          checkBox = document.createElement("INPUT");
-          checkBox.type = "checkbox";
-          checkBox.checked = checked;
-          checkBox.classList.add("input_checkbox", "todo_list_cbx", "checked");
-          checkBox.value = checked;
-          content = document.createElement("P");
-          content.innerText = title;
-          li.appendChild(checkBox);
-          li.appendChild(content);
-          printList.push(li);
+        dateTodoListInfo.forEach( item => {
+          printList.push(todoItemMake(item));
         });
         todoList.append(...printList);
       };
@@ -85,6 +99,59 @@
         while (todoList.hasChildNodes()) {
           todoList.removeChild(todoList.firstChild);
         }
+      };
+
+      const todoItemMake = ({id, checked, title}) => {
+        const li = document.createElement("LI");
+        const checkBox = document.createElement("INPUT");
+        const content = document.createElement("P");
+        const deleteBtn = document.createElement("DIV");
+        li.id = id;
+        li.classList.add("todo_list_item");
+        checkBox.type = "checkbox";
+        checkBox.value = checked;
+        checkBox.classList.add("input_checkbox", "todo_list_cbx");
+        if (checked) {
+          checkBox.classList.add("checked");
+        }
+        checkBoxEventAdd(checkBox);
+        checkBox.value = checked;
+        content.innerText = title;
+        deleteBtn.classList.add("btn", "todo_delete_btn");
+        deleteBtn.innerText = "DELETE";
+        delelteBtnEventAdd(deleteBtn);
+        li.append(checkBox, content, deleteBtn);
+        return li;
+      };
+
+      const delelteBtnEventAdd = deleteBtn => {
+        deleteBtn.addEventListener("click", function() {
+          const { dateNavigator: { moveDate } } = Todo;
+          const list = Todo.list[moveDate];
+          const deleteId = this.parentElement.id;
+          Todo.list[moveDate] = Todo.list[moveDate].filter(({ id }) => deleteId !== id);
+          listUp();
+        });
+      };
+      const checkBoxEventAdd = checkBox => {
+        const checked = checkBox.checked;
+        checkBox.addEventListener("click", function() {
+          const value = this.value !== "true";
+          const { dateNavigator: { moveDate } } = Todo;
+          const changeId = this.parentElement.id;
+          Todo.list[moveDate].forEach((item, index, list) => {
+            if (changeId !== item.id) {
+              return;
+            }
+            item.checked = value;
+            list[index] = item;
+          });
+          if (value) {
+            this.classList.add("checked");
+            return;
+          }
+          this.classList.remove("checked");
+        });
       };
 
       const dateNavigatorInit = () => {
@@ -183,7 +250,7 @@
           <div class="todo_container">
             <div class="todo_box">
               <div class="todo_input_box">
-                <input class="input_text todo_input" type="text" name="todo" />
+                <input class="input_text todo_input" type="text" name="todo" id="todoInput"/>
                 <div class="todo_register btn" id="register">REGISTER</div>
               </div>
               <div class="todo_list_box">

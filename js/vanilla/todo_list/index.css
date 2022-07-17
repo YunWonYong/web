@@ -91,6 +91,10 @@
   margin-top: 5px;
 }
 
+.todo_list {
+  display: grid;
+}
+
 .todo_list_item {
   display: block;
   border: 1px solid black;
@@ -101,8 +105,31 @@
   clear: both;
 }
 
+.todo_list_item:hover {
+  margin: 0 -10px;
+  padding: 5px;
+}
+
 .todo_list_cbx {
   float: left;
   width: 15px;
   height: 15px;
+}
+
+
+.todo_delete_btn {
+  background-color: red;
+  color: white;
+  vertical-align: middle;
+  padding: 1px;
+  border-color: red;
+  float:right;
+  font-size: 11px;
+  margin: 3px 5px;
+  align-content: center;
+
+}
+
+.todo_delete_btn::after {
+  clear: both;
 }
